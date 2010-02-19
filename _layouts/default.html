@@ -7,16 +7,30 @@
 <link rel="stylesheet" href="css/overtone.css" type="text/css" media="screen" />
 
 <title>{{ page.title }}</title>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.1.min.js"></script>
+<script type="text/javascript" src="/js/fancybox/jquery.fancybox-1.3.0.pack.js"></script>
+<link rel="stylesheet" type="text/css" href="/js/fancybox/jquery.fancybox-1.3.0.css" media="screen" />
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $("a.fancy").fancybox();
+});
+</script>
+
 </head>
 
 <body>
 <a href="http://github.com/rosejn/overtone"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
 <div id="container">
+  <div id="header">
+    <img id="logo" src="/media/logo.png" />
+  </div>
 
-  <h1>{{ page.title }}</h1>
-
-  {{ content }}
+  <div id="content">
+    {{ content }}
+  </div>
 
   <div class="footer">
   </div>

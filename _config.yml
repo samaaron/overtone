@@ -1,1 +1,5 @@
+exclude: ['src', 'ext', 'lib', 'doc', 'autodoc']
 pygments: true
+lsi: false
+auto: true
+server: true
