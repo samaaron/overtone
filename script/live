@@ -1,0 +1,4 @@
+#/usr/bin/bash
+
+jekyll --server --auto &
+lessc style/style.less --watch
