@@ -8,7 +8,8 @@ ideas from synthesis and sampling to instrument building, live-coding and
 collaborative jamming.  We use the
 [SuperCollider](http://supercollider.sourceforge.net/) synth server as the audio
 engine.  Synthesizers, effects, analyzers and musical generators can be
-programmed in Clojure or designed in a visual data flow editor similar to PD or
+programmed in [Clojure](http://clojure.org) or designed in a visual data flow
+editor similar to [PureData](http://puredata.info/) or
 Max/MSP.  The environment will be integrated with a peer-to-peer network that
 allows for collaborative sessions over the internet and easy sharing of
 instruments and effects.
