@@ -16,9 +16,12 @@ simple synth on the repl.
 ; boot the synth server
 (boot)
 
-; define a synth
-(defsynth chop-saw [freq 440 depth 5] 
-  (rlpf (saw (+ freq (* depth (sin-osc:kr 8))))))
+; here is a random, echoing, ping synth
+(defsynth chop-saw [freq 440 depth 5]                                                                                     
+  (comb-n (* (env-gen (perc 0.1 0.4) (lf-pulse:kr 2)) 
+             (rlpf (saw (+ freq (* depth 
+                                (lf-saw:kr (lf-pulse:kr 0.1 0.2))))) 
+                   freq 0.6))))
 
 ; play it
 (chop-saw)

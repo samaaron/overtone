@@ -23,7 +23,10 @@ a img {
   color: white;
 }
 
-pre { background: #000; color: #fff; padding: 15px;}
+pre { 
+  padding: 15px;
+  background-color: #eeeeee;
+}
 
 hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
 
@@ -42,7 +45,6 @@ body {
 }
 
 #header {
-  border-bottom: 1px solid #ffffff;
   width: 100%;
   padding: 5px;
 }
@@ -55,3 +57,19 @@ body {
 .download { float: right; }
 
 .footer { text-align:center; padding-top:30px; font-style: italic; }
+
+ul#menu {
+  margin: 10px auto;
+  width: 300px;
+  border-top: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+  padding: 5px;
+  padding-left: 50px;
+}
+
+ul#menu li {
+  display: inline;
+  margin-right: 10px;
+  font-size: 1.2em;
+  padding: 5px;
+}
