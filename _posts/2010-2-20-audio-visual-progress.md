@@ -53,7 +53,7 @@ will allow you to define synthesizers and control patches in a basic graphical
 programming environment.  Here's a screenshot showing some of the widgets
 implemented in the first prototype (click to zoom):
 
-<a class="fancy" href="/media/overflow.png"><img src="/media/overflow-small.png"/></a>
+<a class="fancy" href="media/overflow.png"><img src="media/overflow-small.png"/></a>
 
 Overtone can be used as a library from Clojure code or on the repl, but there is
 also the beginnings of a standalone application.  It currently boots the server
