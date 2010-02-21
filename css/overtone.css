@@ -1,63 +1,79 @@
-h1 { font-size: 3.8em; color: #000000; margin-bottom: 3px; }
+h1 {
+  font-size: 3.8em;
+  color: #000000;
+  margin-bottom: 3px;
+}
 h1 .small { font-size: 0.4em; }
-h1 a { text-decoration: none }
-h2 { 
-  font-size: 1.5em; 
-  color: #000000; 
+h1 a { text-decoration: none; }
+h2 {
+  font-size: 1.5em;
+  color: #000000;
   border-bottom: 1px solid #ffffff;
   padding-left: 5px;
 }
-h3 { text-align: center; color: #000000; }
-
-a, a:visited, a:hover { 
-  color: #0000e8; 
+h3 {
+  text-align: center;
+  color: #000000;
+}
+a {
+  color: #088f8c;
   text-decoration: none;
 }
-
-h4 a {
-  color: black;
+a:visited {
+  color: #088f8c;
+  text-decoration: none;
 }
-
+a:hover {
+  color: #088f8c;
+  text-decoration: none;
+}
+h4 a { color: black; }
 a img {
   text-decoration: none;
   color: white;
 }
-
-pre { 
+pre {
   padding: 15px;
   background-color: #eeeeee;
 }
-
-hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-
+hr {
+  border: 0;
+  width: 80%;
+  border-bottom: 1px solid #aaaaaa;
+}
 body {
-  margin-top: 1.0em;
+  margin-top: 1em;
   background-color: #555555;
-  font-family: "Helvetica,Arial,FreeSans"; 
+  font-family: "Helvetica,Arial,FreeSans";
   color: #000000;
 }
-
 #container {
-  background-color: #D2D2D2;
+  background-color: #d2d2d2;
   margin: 0 auto;
   width: 700px;
   padding: 20px;
 }
-
 #header {
   width: 100%;
   padding: 5px;
 }
-
-#content {
-  padding: 10px;
+#content { padding: 10px; }
+div.post {
+  padding-left: 10px;
+  padding-right: 10px;
 }
-
-.description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+.description {
+  font-size: 1.2em;
+  margin-bottom: 30px;
+  margin-top: 30px;
+  font-style: italic;
+}
 .download { float: right; }
-
-.footer { text-align:center; padding-top:30px; font-style: italic; }
-
+.footer {
+  text-align: center;
+  padding-top: 30px;
+  font-style: italic;
+}
 ul#menu {
   margin: 10px auto;
   width: 300px;
@@ -66,7 +82,6 @@ ul#menu {
   padding: 5px;
   padding-left: 50px;
 }
-
 ul#menu li {
   display: inline;
   margin-right: 10px;
