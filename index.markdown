@@ -30,7 +30,7 @@ and [Java](http://java.com/en/download/index.jsp) installed to run it (plus the
 * [Jeff Rose](http://lifeisagraph.com)
 * Jon Rose
 * [Sam Aaron](http://sam.aaron.name)
-* [Fabian Aussems](http://http://mozinator.eu/)
+* [Fabian Aussems](http://mozinator.eu/)
 * Christophe McKeon
 
 We've got big ideas for Project Overtone, and we can use all the help we can
