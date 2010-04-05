@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+jekyll && rsync -avz --delete _site/ rosejn.net:/users/home/rosejn/domains/project-overtone.net/web/public

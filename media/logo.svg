@@ -51,19 +51,19 @@
   </defs>
   <sodipodi:namedview
      id="base"
-     pagecolor="#ffffff"
+     pagecolor="#323232"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="6.9766667"
-     inkscape:cx="-7.8689231"
-     inkscape:cy="-10.088133"
+     inkscape:zoom="18.591737"
+     inkscape:cx="30.691554"
+     inkscape:cy="11.323459"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1440"
-     inkscape:window-height="850"
+     inkscape:window-width="1920"
+     inkscape:window-height="1030"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="1" />
@@ -86,7 +86,7 @@
      transform="translate(-62.269305,-379.59316)">
     <path
        sodipodi:type="arc"
-       style="fill:#000000;fill-opacity:0;stroke:#088f8c;stroke-width:10.30000019000000044;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       style="fill:#000000;fill-opacity:0;stroke:#0082e2;stroke-width:10.30000019000000044;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="path3171"
        sodipodi:cx="-468.38513"
        sodipodi:cy="127.30155"
@@ -99,27 +99,39 @@
        transform="matrix(0.1758049,0,0,0.1758049,154.52558,367.1248)" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
-       x="83.538727"
-       y="395.96725"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS"
+       x="83.646301"
+       y="397.90359"
        id="text3179"><tspan
          sodipodi:role="line"
          id="tspan3181"
-         x="83.538727"
-         y="395.96725"
-         style="font-size:12px">vertone</tspan></text>
+         x="83.646301"
+         y="397.90359"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS">vertone</tspan></text>
     <path
        sodipodi:type="arc"
-       style="fill:none;stroke:#000000;stroke-width:8.42312717;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
-       id="path3173"
-       sodipodi:cx="-423.01031"
-       sodipodi:cy="105.346"
-       sodipodi:rx="10.245925"
-       sodipodi:ry="10.245925"
-       d="m -412.76778,105.60939 c -0.14546,5.6568 -4.84912,10.12461 -10.50592,9.97915 -5.6568,-0.14547 -10.12462,-4.84913 -9.97915,-10.50593 0.14546,-5.656795 4.84912,-10.124613 10.50592,-9.979148 5.52399,0.142049 9.94021,4.638941 9.98224,10.164598"
-       sodipodi:start="0.025709398"
-       sodipodi:end="6.2755779"
-       sodipodi:open="true"
-       transform="matrix(0.1450582,0,0,0.1450582,141.77203,370.57348)" />
+       style="opacity:0.95999995;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3591"
+       sodipodi:cx="5.0829034"
+       sodipodi:cy="-7.2581782"
+       sodipodi:rx="1.1564277"
+       sodipodi:ry="1.1564277"
+       d="m 6.2393311,-7.2581782 a 1.1564277,1.1564277 0 1 1 -2.3128555,0 1.1564277,1.1564277 0 1 1 2.3128555,0 z"
+       transform="matrix(1.3367277,0,0,1.3367277,73.60118,395.45714)"
+       inkscape:export-xdpi="295.10065"
+       inkscape:export-ydpi="295.10065" />
+    <path
+       transform="matrix(0.72562915,0,0,0.72562915,76.707335,391.02168)"
+       d="m 6.2393311,-7.2581782 a 1.1564277,1.1564277 0 1 1 -2.3128555,0 1.1564277,1.1564277 0 1 1 2.3128555,0 z"
+       sodipodi:ry="1.1564277"
+       sodipodi:rx="1.1564277"
+       sodipodi:cy="-7.2581782"
+       sodipodi:cx="5.0829034"
+       id="path3593"
+       style="opacity:0.95999995;fill:#333333;stroke:#333333;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       sodipodi:type="arc"
+       inkscape:export-filename="/home/rosejn/projects/overtone/web/media/path3591.png"
+       inkscape:export-xdpi="295.10065"
+       inkscape:export-ydpi="295.10065" />
   </g>
 </svg>

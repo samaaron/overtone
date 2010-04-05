@@ -1,9 +1,19 @@
-@bg1: #555555;
-@bg2: #D2D2D2;
-@c1: #088F8C;
-@text: #000000;
+/* @bg1: #555555; */
+@bg1: rgb(50, 50, 50);
+@bg2: rgb(50, 50, 50); /* #D2D2D2; */
+@c1: rgb(0, 130, 226);
+@c2: rgb(15, 157, 75);
+@text: #ffffff;
 
 @inset: 10px;
+
+body {
+  margin-top: 0;
+  padding-top: 0;
+  background-color: @bg1;
+  font-family: "Trebuchet MS",Verdana,Arial,Helvetica,sans-serif;
+  color: @text;
+}
 
 h1 { 
   font-size: 3.8em; 
@@ -28,7 +38,7 @@ h2 {
 
 h3 { 
   text-align: center; 
-  color: #000000; 
+  color: @text; 
 }
 
 a, a:visited, a:hover { 
@@ -37,7 +47,8 @@ a, a:visited, a:hover {
 }
 
 h4 a {
-  color: black;
+  color: @c2;
+  font-size: 120%;
 }
 
 a img {
@@ -45,22 +56,21 @@ a img {
   color: white;
 }
 
+div.highlight {
+  width: 90%;
+  margin-left: 1em;
+}
+
 pre { 
   padding: 15px;
   background-color: #eeeeee;
+  color: #000000;
 }
 
 hr { 
   border: 0; 
   width: 80%; 
   border-bottom: 1px solid #aaa
-}
-
-body {
-  margin-top: 1.0em;
-  background-color: @bg1;
-  font-family: "Helvetica,Arial,FreeSans"; 
-  color: @text;
 }
 
 #container {
