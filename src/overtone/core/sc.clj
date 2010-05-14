@@ -18,7 +18,8 @@
     [clojure.contrib.java-utils :only [file]]
     (clojure.contrib shell-out seq-utils pprint)
     osc
-    [clojure.contrib.fcase :only [case]]))
+    [clojure.contrib.fcase :only [case]]
+    vijual))
 
 ; TODO: Make this work correctly
 ; NOTE: "localhost" doesn't work, at least on my laptopt
@@ -27,21 +28,27 @@
 
 ; Max number of milliseconds to wait for a reply from the server
 (defonce REPLY-TIMEOUT 500)
+(defonce STATUS-TIMEOUT 200)
 
-(def ROOT-GROUP 1)
-(def SYNTH-GROUP 1)
+; ID of the synth group
+(defonce SYNTH-GROUP 1)
 
-(defonce server-thread* (ref nil))
-(defonce server*        (ref nil))
-(defonce status*        (ref :no-audio))
-(defonce synths*        (ref nil))
-(defonce sc-world*      (ref nil))
+; Number of times to attempt to connect to the server
+(defonce N-RETRIES 5)
+
+
+(defonce server-thread*  (ref nil))
+(defonce server*         (ref nil))
+(defonce synths*         (ref nil))
+(defonce sc-world*       (ref nil))
+(defonce scsynth-server* (ref nil))
+(defonce status*         (ref :no-audio))
 
 ; Server limits
-(defonce MAX-NODES 1024)
-(defonce MAX-BUFFERS 1024)
-(defonce MAX-SDEFS 1024)
-(defonce MAX-AUDIO-BUS 128)
+(defonce MAX-NODES       1024)
+(defonce MAX-BUFFERS     1024)
+(defonce MAX-SDEFS       1024)
+(defonce MAX-AUDIO-BUS   128)
 (defonce MAX-CONTROL-BUS 4096)
 (defonce MAX-OSC-SAMPLES 8192)
 
@@ -62,14 +69,15 @@
    :control-bus MAX-CONTROL-BUS})
 
 (defn alloc-id
-  "Allocate a new ID for the type corresponding to key."
-  [k]
-  (let [bits  (get allocator-bits k)
-        limit (get allocator-limits k)]
+  "Allocate a new ID for the resource type corresponding to key.
+   Raises an exception if the server limits have been exceeded."
+  [resource]
+  (let [bits  (allocator-bits resource)
+        limit (allocator-limits resource)]
     (locking bits
       (let [id (.nextClearBit bits 0)]
-        (if (= limit id)
-          (throw (Exception. (str "No more " (name k) " ids available!")))
+        (if (>= id limit)
+          (throw (Exception. (str "No more " (name resource) " ids available!")))
           (do
             (.set bits id)
             id))))))
@@ -77,18 +85,18 @@
 (alloc-id :node) ; ID zero is the root group
 
 (defn free-id
-  "Free the id of type key."
-  [k id]
-  (let [bits (get allocator-bits k)
-        limit (get allocator-limits k)]
+  "Free the id associated with the specified resource."
+  [resource id]
+  (let [bits (get allocator-bits resource)
+        limit (get allocator-limits resource)]
     (locking bits
       (.clear bits id))))
 
 (defn all-ids
-  "Get all of the currently allocated ids for key."
-  [k]
-  (let [bits (get allocator-bits k)
-        limit (get allocator-limits k)]
+  "Returns a list of all of the currently allocated ids for the specified resource."
+  [resource]
+  (let [bits  (allocator-bits resource)
+        limit (allocator-limits resource)]
     (locking bits
       (loop [ids []
              idx 0]
@@ -98,27 +106,47 @@
             ids))))))
 
 (defn clear-ids
-  "Clear all ids allocated for key."
-  [k]
-  (doseq [id (all-ids k)]
-    (free-id k id)))
+  "Clear all ids allocated for a specified resource."
+  [resource]
+  (doseq [id (all-ids resource)]
+    (free-id resource id)))
 
-(defn connected? []
+(defn connected?
+  "Returns true or fault depending on whether the server status is connected."
+  []
   (= :connected @status*))
 
 (declare boot)
 
-; The base handler for receiving osc messages just forwards the message on
-; as an event using the osc path as the event key.
-(on ::osc-msg-received (fn [{{path :path args :args} :msg}]
-                         (event path :path path :args args)))
-
 (defn snd
-  "Sends an OSC message."
+  "Send an OSC message to the server."
   [path & args]
   (let [msg (apply osc-msg path (osc-type-tag args) args)]
     (log/debug "snd (" @server* "): " msg)
     (osc-send-msg @server* msg)))
+
+;Replies to sender with the following message.
+;status.reply
+;	int - 1. unused.
+;	int - number of unit generators.
+;	int - number of synths.
+;	int - number of groups.
+;	int - number of loaded synth definitions.
+;	float - average percent CPU usage for signal processing
+;	float - peak percent CPU usage for signal processing
+;	double - nominal sample rate
+;	double - actual sample rate
+
+(defn recv [path & [timeout]]
+  "Receive an OSC message from the server"
+  (let [p (promise)]
+    (on path #(do (deliver p %) :done))
+    (if timeout
+      (try
+        (.get (future @p) timeout TimeUnit/MILLISECONDS)
+        (catch TimeoutException t
+          :timeout))
+      @p)))
 
 (defmacro at
   "All messages sent within the body will be sent in the same timestamped OSC
@@ -178,7 +206,7 @@
   synth IDs when they are automatically freed with envelope triggers.  It also lets
   us receive custom messages from various trigger ugens."
   [notify?]
-  (snd "/notify" (if (false? notify?) 0 1)))
+  (snd "/notify" (if notify? 1 0)))
 
 (defn- node-destroyed
   "Frees up a synth node to keep in sync with the server."
@@ -191,24 +219,18 @@
   [id]
   (log/debug (format "node-created: %d" id)))
 
-; Setup the feedback handlers with the audio server.
-(on "/n_end" #(node-destroyed (first (:args %))))
-(on "/n_go" #(node-created (first (:args %))))
-
-(def N-RETRIES 5)
-
-
 (defn- connect-internal
+  "Configures Overtone to communicate with the internal server.
+   Requires the sc-world* ref to have been initialized."
   []
   (log/debug "Connecting to internal SuperCollider server")
-  (let [send-fn (fn [peer-obj buffer]
-                  (.send @sc-world* buffer))
-        peer (assoc (osc-peer) :send-fn send-fn)]
-    (.addMessageReceivedListener @sc-world*
-                                 (proxy [MessageReceivedListener] []
-                                   (messageReceived [buf size]
-                                                    (event ::osc-msg-received
-                                                           :msg (osc-decode-packet buf)))))
+  (let [peer       (assoc (osc-peer) :send-fn #(.send @sc-world* %2))
+        recv-proxy (proxy [MessageReceivedListener] []
+                     (messageReceived [buf size]
+                                      (event ::osc-msg-received
+                                             :msg (osc-decode-packet buf))))]
+
+    (.addMessageReceivedListener @sc-world* recv-proxy)
     (dosync (ref-set server* peer))
     (snd "/status")
     (dosync (ref-set status* :connected))
@@ -216,6 +238,7 @@
     (event :connected)))
 
 (defn- connect-external
+  "Configures Overtone to communicate with an external server."
   [host port]
   (log/debug "Connecting to external SuperCollider server: " host ":" port)
   (let [sc-server (osc-client host port)]
@@ -260,29 +283,9 @@
   (doseq [msg @server-log*]
     (print msg)))
 
-;Replies to sender with the following message.
-;status.reply
-;	int - 1. unused.
-;	int - number of unit generators.
-;	int - number of synths.
-;	int - number of groups.
-;	int - number of loaded synth definitions.
-;	float - average percent CPU usage for signal processing
-;	float - peak percent CPU usage for signal processing
-;	double - nominal sample rate
-;	double - actual sample rate
-
-(defn recv [path & [timeout]]
-  (let [p (promise)]
-    (on path #(do (deliver p %) :done))
-    (if timeout
-      (try
-        (.get (future @p) timeout TimeUnit/MILLISECONDS)
-        (catch TimeoutException t
-          :timeout))
-      @p)))
-
-(defn- parse-status [args]
+(defn- parse-status
+  "Parse the scynth status OSC message and return a map containing all the values."
+  [args]
   (let [[_ ugens synths groups loaded avg peak nominal actual] args]
     {:n-ugens ugens
      :n-synths synths
@@ -293,10 +296,9 @@
      :nominal-sample-rate nominal
      :actual-sample-rate actual}))
 
-(def STATUS-TIMEOUT 200)
-
 (defn status
-  "Check the status of the audio server."
+  "Check the status of the audio server. Raises an exception if the server doesn't
+   respond within the default timeout period (STATUS-TIMEOUT)."
   []
   (if (= :connected @status*)
     (let [p (promise)]
@@ -312,12 +314,12 @@
 
 (defn wait-sync
   "Wait until the audio server has completed all asynchronous commands currently in execution."
-  [& [timeout]]
-  (let [sync-id (rand-int 999999)
-        _ (snd "/sync" sync-id)
-        reply (recv "/synced" (if timeout timeout REPLY-TIMEOUT))
-        reply-id (first (:args reply))]
-    (= sync-id reply-id)))
+  ([]        (wait-sync REPLY-TIMEOUT))
+  ([timeout] ((let [sync-id  (rand-int 999999)
+                   _        (snd "/sync" sync-id)
+                   reply    (recv "/synced" timeout)
+                   reply-id (first (:args reply))]
+               (= sync-id reply-id)))))
 
 (defn connect-jack-ports
   "Connect the jack input and output ports as best we can.  If jack ports are always different
@@ -331,7 +333,7 @@
         system-outs    (re-seq #"system:playback_[0-9]*" port-list)
         interface-ins  (re-seq #"system:AC[0-9]*_dev[0-9]*_.*In.*" port-list)
         interface-outs (re-seq #"system:AP[0-9]*_dev[0-9]*_LineOut.*" port-list)
-        connections (partition 2 (concat 
+        connections (partition 2 (concat
                                    (interleave sc-outs system-outs)
                                    (interleave sc-outs interface-outs)
                                    (interleave system-ins sc-ins)
@@ -348,11 +350,6 @@
                :windows []
                :mac   ["-U" "/Applications/SuperCollider/plugins"] })
 
-(if (= :linux (@config* :os))
-  (on :connected #(connect-jack-ports)))
-
-(defonce scsynth-server*        (ref nil))
-
 (defn internal-booter [port]
   (reset! running?* true)
   (log/info "booting internal audio server listening on port: " port)
@@ -363,6 +360,8 @@
     (.run server)))
 
 (defn boot-internal
+  "Boots an internal server on the specified port or a random port number if
+   none specified."
   ([] (boot-internal (+ (rand-int 50000) 2000)))
   ([port]
    (log/info "boot-internal: " port)
@@ -379,8 +378,8 @@
   "Pull audio server log data from a pipe and store for later printing."
   [stream read-buf]
   (while (pos? (.available stream))
-    (let [n (min (count read-buf) (.available stream))
-          _ (.read stream read-buf 0 n)
+    (let [n   (min (count read-buf) (.available stream))
+          _   (.read stream read-buf 0 n)
           msg (String. read-buf 0 n)]
       (dosync (alter server-log* conj msg))
       (log/info (String. read-buf 0 n)))))
@@ -465,12 +464,12 @@
   "
   [synth-name & args]
   {:pre [(connected?)]}
-  (let [id (alloc-id :node)
-        argmap (apply hash-map args)
+  (let [id       (alloc-id :node)
+        argmap   (apply hash-map args)
         position ((get argmap :position :tail) POSITION)
-        target (get argmap :target 0)
-        args (flatten (seq (-> argmap (dissoc :position) (dissoc :target))))
-        args (stringify (floatify args))]
+        target   (get argmap :target 0)
+        args     (flatten (seq (-> argmap (dissoc :position) (dissoc :target))))
+        args     (stringify (floatify args))]
     (apply snd "/s_new" synth-name id position target args)
     id))
 
@@ -620,10 +619,34 @@
     (let [tree (:args (recv "/g_queryTree.reply" REPLY-TIMEOUT))]
       (parse-node-tree tree)))))
 
+(defn render-group-node-str-for-vijual
+  [node]
+  (str "Group " (node :group)))
+
+(defn render-synth-node-str-for-vijual
+  [node]
+  (str "Synth " (node :id) " " (node :synth)))
+
+(defn render-node-str-for-vijual
+  [node]
+  (cond
+   (contains? node :group) (render-group-node-str-for-vijual node)
+   (contains? node :synth) (render-synth-node-str-for-vijual node)
+   (true) (throw (Exception. "Please implement a vijual node renderer for this node type"))
+   ))
+
+(defn prepare-tree-for-vijual
+  [tree]
+  (let [node     (render-node-str-for-vijual (dissoc tree :children))
+        children (tree :children)]
+    (if (pos? (count children))
+      (apply conj [node] (for [i children] (prepare-tree-for-vijual i)))
+      [node])))
+
 (defn print-node-tree
   "Pretty print the tree of live synthesizer instances.  Takes the same args as (node-tree)."
   [& args]
-  (pprint (apply node-tree args)))
+  (draw-tree [(prepare-tree-for-vijual (apply node-tree args))]))
 
 (defn prepend-node
   "Add a synth node to the end of a group list."
@@ -953,10 +976,6 @@
       named)))
 
 
-; TODO: Think about a sane policy for setting up state, especially when we are connected
-; with many peers on one or more servers...
-(on :connected #(reset)) ; put ourselves in a standard place after connect
-
 (defn synth-player
   "Returns a player function for a named synth.  Used by (synth ...) internally, but can be
   used to generate a player for a pre-compiled synth.  The function generated will accept two
@@ -1020,4 +1039,23 @@
     (callable-map {:player player
                    :sample s}
                   player)))
+
+
+; The base handler for receiving osc messages just forwards the message on
+; as an event using the osc path as the event key.
+(on ::osc-msg-received (fn [{{path :path args :args} :msg}]
+                         (event path :path path :args args)))
+
+; Setup the feedback handlers with the audio server.
+(on "/n_end" #(node-destroyed (first (:args %))))
+(on "/n_go" #(node-created (first (:args %))))
+
+; TODO: Think about a sane policy for setting up state, especially when we are connected
+; with many peers on one or more servers...
+(on :connected #(reset)) ; put ourselves in a standard place after connect
+
+(if (= :linux (@config* :os))
+  (on :connected #(connect-jack-ports)))
+
+
 
